@@ -1,0 +1,75 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: logstash
+  name: logstash
+spec:
+  replicas: 1
+  selector:
+    app: logstash
+    deploymentconfig: logstash
+  strategy:
+    type: Rolling
+  template:
+    metadata:
+      labels:
+        app: logstash
+        deploymentconfig: logstash
+    spec:
+      containers:
+      - image: 'image-registry.openshift-image-registry.svc:5000/logging/logstash:7.2.0'
+        imagePullPolicy: Always
+        name: logstash
+        ports:
+        - containerPort: 5044
+          name: beats
+          protocol: TCP
+        resources:
+          limits:
+            memory: 1500M
+          requests:
+            memory: 1G
+        volumeMounts:
+        - mountPath: /etc/logstash
+          name: volume-config
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: logstash-conf
+        name: volume-config
+      triggers:  
+        - imageChangeParams:
+            automatic: false
+            containerNames:
+              - logstash
+            from:
+              kind: ImageStreamTag
+              name: 'logstash:7.2.0'
+          type: ImageChange
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: logstash
+  name: logstash
+spec:
+  ports:
+  - name: 5044-tcp
+    port: 5044
+    protocol: TCP
+    targetPort: 5044
+  - name: 8080-http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: logstash
+  sessionAffinity: None
+  type: ClusterIP

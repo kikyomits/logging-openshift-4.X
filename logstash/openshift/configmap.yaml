@@ -1,0 +1,45 @@
+
+apiVersion: v1
+kind: Template
+metadata:
+  name: logstash-conf
+objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: logstash-conf
+  data:
+    10-input-beats.conf: |-
+      input {
+        beats {
+          port => 5044
+        }
+        http {
+          host => "0.0.0.0"
+          port => "8080"
+        }
+      }
+    20-filter.conf: |-
+      filter {
+        drop {
+          percentage => 90
+        }
+      }
+    80-output-sumo.conf: |-
+      output {
+        sumologic {
+          url => "${SUMO_ENDPOINT}"
+          format => "%{@json}"
+          source_category => "dev/container/ocp/logs"
+          source_host => "sumo-logstash"
+          interval => 10
+          pile_max => 10240000
+          queue_max => 409600
+          sender_max => 100
+        }
+      }
+parameters:
+- description: Sumologic HTTP Post Endpoint
+  displayName: Sumologic HTTP Post Endpoint
+  name: SUMO_ENDPOINT
+  required: true

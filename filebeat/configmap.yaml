@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: filebeat-conf
+objects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: filebeat-conf
+    data:
+      filebeat.yml: |-
+
+        #============================= Filebeat input ===============================
+        filebeat.inputs:
+          # - type: log
+          #   enabled: true
+          #   paths:
+            #     - /var/log/*.log
+          # - type: kubernetes
+          #   containers.paths:
+          #     - /var/log/pods/${data.kubernetes.pod.uid}/${data.kubernetes.container.name}/*.log
+          - type: log
+            paths:
+              - /var/log/pods/*/*/*.log
+            processors:
+              - dissect:
+                  tokenizer: "/var/log/pods/%{kubernetes.pod.uid}/%{kubernestes.container.name}/%{index}.log"
+                  field: "source"
+              - add_kubernetes_metadata:
+                  indexers:
+                    - pod_uid:
+                  matchers:
+                    - fields:
+                        lookup_fields: ["kubernetes.pod.uid"]
+              
+        #============================= Filebeat modules ===============================
+
+        filebeat.config.modules:
+          # Glob pattern for configuration loading
+          path: ${path.config}/modules.d/*.yml
+          reload.enabled: false
+
+        #================================ General =====================================
+
+        # The name of the shipper that publishes the network data. It can be used to group
+        # all the transactions sent by a single shipper in the web interface.
+        name: filebeat
+
+        # Optional fields that you can specify to add additional information to the
+        # output.
+        fields:
+          env: poc
+
+        #----------------------------- Logstash output --------------------------------
+        output.logstash:
+          # The Logstash hosts
+          hosts: ["${LOGSTASH_ENDPOINT}:5044"]
+
+        #================================ Processors =====================================
+
+        processors:
+          - add_host_metadata: ~
+          - add_cloud_metadata: ~
+          - add_kubernetes_metadata:
+              in_cluster: true
+
+        #================================ Logging =====================================
+
+        # Sets log level. The default log level is info.
+        # Available log levels are: error, warning, info, debug
+        logging.level: error
+
+parameters:
+  - description: Logstash HTTP Post Endpoint
+    displayName: Logstash HTTP Post Endpoint
+    name: LOGSTASH_ENDPOINT
+    required: true

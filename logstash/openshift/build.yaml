@@ -1,0 +1,28 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    app: logstash
+  name: logstash
+  namespace: logging
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'logstash:7.2.0'
+  source:
+    type: Git
+    git: 
+      uri: "https://github.com/mk811/logging-openshift-4.X.git"
+      ref: "master"
+    contextDir: logstash
+  strategy:
+    type: Docker
+
+---
+apiVersion: v1
+kind: ImageStream
+metadata: 
+  name: logstash
+  labels:
+    app: logstash
