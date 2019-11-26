@@ -9,30 +9,25 @@ objects:
       name: filebeat-conf
     data:
       filebeat.yml: |-
+        filebeat.autodiscover:
+          providers:
+            - type: kubernetes
+              include_pod_uid: true
+              in_cluster: true
+              hints.enabled: true
+              include_annotations: '*'
+              templates:
+                - condition:
+                    regexp:
+                      kubernetes.container.name: '.+'
+                  config:
+                    - type: container
+                      combine_partial: true
+                      cri.parse_flags: true
+                      cri.force: true
+                      paths: 
+                        - "/var/log/pods/${data.kubernetes.namespace}_${data.kubernetes.pod.name}_${data.kubernetes.pod.uid}/${data.kubernetes.container.name}/*.log"
 
-        #============================= Filebeat input ===============================
-        filebeat.inputs:
-          # - type: log
-          #   enabled: true
-          #   paths:
-            #     - /var/log/*.log
-          # - type: kubernetes
-          #   containers.paths:
-          #     - /var/log/pods/${data.kubernetes.pod.uid}/${data.kubernetes.container.name}/*.log
-          - type: log
-            paths:
-              - /var/log/pods/*/*/*.log
-            processors:
-              - dissect:
-                  tokenizer: "/var/log/pods/%{kubernetes.pod.uid}/%{kubernestes.container.name}/%{index}.log"
-                  field: "source"
-              - add_kubernetes_metadata:
-                  indexers:
-                    - pod_uid:
-                  matchers:
-                    - fields:
-                        lookup_fields: ["kubernetes.pod.uid"]
-              
         #============================= Filebeat modules ===============================
 
         filebeat.config.modules:
@@ -44,7 +39,7 @@ objects:
 
         # The name of the shipper that publishes the network data. It can be used to group
         # all the transactions sent by a single shipper in the web interface.
-        name: filebeat
+        name: ${POD_NAME}
 
         # Optional fields that you can specify to add additional information to the
         # output.
@@ -57,16 +52,12 @@ objects:
           hosts: ["${LOGSTASH_ENDPOINT}:5044"]
 
         #================================ Processors =====================================
-
         processors:
           - add_host_metadata: ~
           - add_cloud_metadata: ~
-          - add_kubernetes_metadata:
-              in_cluster: true
+          - add_kubernetes_metadata: ~
 
         #================================ Logging =====================================
-
-        # Sets log level. The default log level is info.
         # Available log levels are: error, warning, info, debug
         logging.level: error
 

@@ -22,7 +22,7 @@ objects:
     20-filter.conf: |-
       filter {
         drop {
-          percentage => 90
+          percentage => 99
         }
       }
     80-output-sumo.conf: |-
