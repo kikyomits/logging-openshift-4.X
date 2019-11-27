@@ -4,7 +4,6 @@ metadata:
   labels:
     app: logstash
   name: logstash
-  namespace: logging
 spec:
   output:
     to:

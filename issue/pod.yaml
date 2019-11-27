@@ -1,0 +1,123 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  annotations:
+    k8s.v1.cni.cncf.io/networks-status: ''
+    openshift.io/deployment-config.name: registry-migration-test-2-trial-5-7vdl8
+    openshift.io/deployment.name: registry-migration-test-2-trial-5-7vdl8-1
+    openshift.io/scc: restricted
+  selfLink: >-
+    /api/v1/namespaces/openshift-migration/pods/registry-migration-test-2-trial-5-7vdl8-1-deploy
+  resourceVersion: '1063034'
+  name: registry-migration-test-2-trial-5-7vdl8-1-deploy
+  uid: 788c06dc-104f-11ea-aa97-0a7cb369ea46
+  creationTimestamp: '2019-11-26T13:20:09Z'
+  namespace: openshift-migration
+  ownerReferences:
+    - apiVersion: v1
+      kind: ReplicationController
+      name: registry-migration-test-2-trial-5-7vdl8-1
+      uid: 787befbe-104f-11ea-aa97-0a7cb369ea46
+  labels:
+    openshift.io/deployer-pod-for.name: registry-migration-test-2-trial-5-7vdl8-1
+spec:
+  restartPolicy: Never
+  activeDeadlineSeconds: 21600
+  serviceAccountName: deployer
+  imagePullSecrets:
+    - name: deployer-dockercfg-9bgk9
+  priority: 0
+  schedulerName: default-scheduler
+  enableServiceLinks: true
+  terminationGracePeriodSeconds: 10
+  shareProcessNamespace: false
+  nodeName: ip-10-0-155-107.ap-southeast-2.compute.internal
+  securityContext:
+    seLinuxOptions:
+      level: 's0:c23,c2'
+    fsGroup: 1000510000
+  containers:
+    - resources: {}
+      terminationMessagePath: /dev/termination-log
+      name: deployment
+      env:
+        - name: OPENSHIFT_DEPLOYMENT_NAME
+          value: registry-migration-test-2-trial-5-7vdl8-1
+        - name: OPENSHIFT_DEPLOYMENT_NAMESPACE
+          value: openshift-migration
+      securityContext:
+        capabilities:
+          drop:
+            - KILL
+            - MKNOD
+            - SETGID
+            - SETUID
+        runAsUser: 1000510000
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - name: deployer-token-dtsdw
+          readOnly: true
+          mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      terminationMessagePolicy: File
+      image: >-
+        quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:82938332ae2b152615e88a46213940c23a3c30b01d3ede88cf6763a1a86a8c77
+  serviceAccount: deployer
+  volumes:
+    - name: deployer-token-dtsdw
+      secret:
+        secretName: deployer-token-dtsdw
+        defaultMode: 420
+  dnsPolicy: ClusterFirst
+  tolerations:
+    - key: node.kubernetes.io/not-ready
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+status:
+  phase: Succeeded
+  conditions:
+    - type: Initialized
+      status: 'True'
+      lastProbeTime: null
+      lastTransitionTime: '2019-11-26T13:20:09Z'
+      reason: PodCompleted
+    - type: Ready
+      status: 'False'
+      lastProbeTime: null
+      lastTransitionTime: '2019-11-26T13:20:44Z'
+      reason: PodCompleted
+    - type: ContainersReady
+      status: 'False'
+      lastProbeTime: null
+      lastTransitionTime: '2019-11-26T13:20:44Z'
+      reason: PodCompleted
+    - type: PodScheduled
+      status: 'True'
+      lastProbeTime: null
+      lastTransitionTime: '2019-11-26T13:20:09Z'
+  hostIP: 10.0.155.107
+  podIP: 10.131.0.164
+  startTime: '2019-11-26T13:20:09Z'
+  containerStatuses:
+    - name: deployment
+      state:
+        terminated:
+          exitCode: 0
+          reason: Completed
+          startedAt: '2019-11-26T13:20:19Z'
+          finishedAt: '2019-11-26T13:20:43Z'
+          containerID: >-
+            cri-o://6849191d81420b0be14d77f78e46a558fd7ee9d9d409477d03772d019951e0e6
+      lastState: {}
+      ready: false
+      restartCount: 0
+      image: >-
+        quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:82938332ae2b152615e88a46213940c23a3c30b01d3ede88cf6763a1a86a8c77
+      imageID: >-
+        quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:82938332ae2b152615e88a46213940c23a3c30b01d3ede88cf6763a1a86a8c77
+      containerID: 'cri-o://6849191d81420b0be14d77f78e46a558fd7ee9d9d409477d03772d019951e0e6'
+  qosClass: BestEffort

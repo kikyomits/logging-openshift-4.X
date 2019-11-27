@@ -4,6 +4,7 @@ metadata:
   name: filebeat
   labels:
     app: filebeat
+    kubernetes.io/cluster-service: "true"
 spec:
   selector:
     matchLabels:
@@ -13,12 +14,15 @@ spec:
       labels:
         name: filebeat
         app: filebeat
+        kubernetes.io/cluster-service: "true"
     spec:
       serviceAccountName: filebeat
       terminationGracePeriodSeconds: 30
-      # hostNetwork: true
       dnsPolicy: ClusterFirst
-
+      nodeSelector:
+        kubernetes.io/os: linux
+      # tolerations:
+      #   - operator: Exists
       containers:
         - name: filebeat
           image: docker.elastic.co/beats/filebeat:7.4.2
@@ -28,10 +32,6 @@ spec:
             - name: filebeat-conf
               mountPath: /usr/share/filebeat/filebeat.yml
               subPath: filebeat.yml
-              readOnly: true
-            # - name: kube
-            #   mountPath: /usr/share/.kube
-            #   readOnly: true
             - name: data
               mountPath: /usr/share/filebeat/data
           securityContext:
@@ -55,9 +55,6 @@ spec:
         - name: filebeat-conf
           configMap:
             name: filebeat-conf
-        # - name: kube
-        #   hostPath:
-        #     path: /root/.kube
         - name: varlog
           hostPath:
             path: /var/log

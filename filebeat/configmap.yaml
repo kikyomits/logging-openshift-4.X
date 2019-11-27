@@ -7,33 +7,96 @@ objects:
     kind: ConfigMap
     metadata:
       name: filebeat-conf
+      label:
+        kubernetes.io/cluster-service: "true"
     data:
       filebeat.yml: |-
+        filebeat.inputs:
+          # - type: container
+          #   paths:
+          #     - /var/log/pods/*/*/*.log
+          #   processors:
+          #     - dissect:
+          #         tokenizer: "/var/log/pods/%{k8s.podRaw}/%{k8s.container}/%{k8s.logIndex}.log"
+          #         field: "log.file.path"
+
+
+                
+        #   - type: log
+        #     paths:
+        #       - /var/log/pods/*/*/*.log
+        #     processors:
+        #       - dissect:
+        #         tokenizer: "/var/log/pods/%{kubernetes.pod.uid}/%{kubernestes.container.name}/%{index}.log"
+        #         field: "source"
+        #       - add_kubernetes_metadata:
+        #         indexers:
+        #           - pod_uid:
+        #         matchers:
+        #           - fields:
+        #               lookup_fields: ["kubernetes.pod.uid"]
+
+        # filebeat.inputs:
+        #   - type: log
+        #     paths:
+        #       - /var/log/pods/*/*/*.log
+        #     processors:
+        #       - dissect:
+        #           tokenizer: "/var/log/pods/%{k8s.podRaw}/%{k8s.container}/%{k8s.logIndex}.log"
+        #           field: "log.file.path"
+
         filebeat.autodiscover:
           providers:
             - type: kubernetes
-              include_pod_uid: true
+              host: ${NODE_NAME}
               in_cluster: true
-              hints.enabled: true
+              include_pod_uid: true
               include_annotations: '*'
+              hints.enabled: true
+              hints.default_config.enabled: false
               templates:
-                - condition:
-                    regexp:
-                      kubernetes.container.name: '.+'
+                - condition.regexp:
+                    kubernetes.namespace: 'default'
                   config:
                     - type: container
                       combine_partial: true
                       cri.parse_flags: true
                       cri.force: true
-                      paths: 
+                      paths:
                         - "/var/log/pods/${data.kubernetes.namespace}_${data.kubernetes.pod.name}_${data.kubernetes.pod.uid}/${data.kubernetes.container.name}/*.log"
+                  
 
-        #============================= Filebeat modules ===============================
+        # filebeat.autodiscover:
+        #   providers:
+        #   - type: kubernetes
+        #     include_pod_uid: true
+        #     in_cluster: true
+        #     hints.enabled: true
+        #     include_annotations: '*'
+        #     templates:
+        #       - condition.regexp:
+        #           kubernetes.container.name: '.+'
+        #         config:
+        #           - type: container
+        #             combine_partial: true
+        #             cri.parse_flags: true
+        #             cri.force: true
+        #             paths: 
+        #               - "/var/log/pods/${data.kubernetes.namespace}_${data.kubernetes.pod.name}_${data.kubernetes.pod.uid}/${data.kubernetes.container.name}/*.log"
 
-        filebeat.config.modules:
-          # Glob pattern for configuration loading
-          path: ${path.config}/modules.d/*.yml
-          reload.enabled: false
+            # - type: kubernetes
+            #   # host: ${NODE_NAME}
+            #   # include_pod_uid: true
+            #   # in_cluster: true
+            #   # include_annotations: '*'
+            #   hints.enabled: true
+            #   hints.default_config:
+            #     type: container
+            #     # combine_partial: true
+            #     # cri.parse_flags: true
+            #     # cri.force: true
+            #     paths:
+            #     - "/var/log/pods/${data.kubernetes.namespace}_${data.kubernetes.pod.name}_${data.kubernetes.pod.uid}/${data.kubernetes.container.name}/*.log"
 
         #================================ General =====================================
 
@@ -55,11 +118,11 @@ objects:
         processors:
           - add_host_metadata: ~
           - add_cloud_metadata: ~
-          - add_kubernetes_metadata: ~
+
 
         #================================ Logging =====================================
         # Available log levels are: error, warning, info, debug
-        logging.level: error
+        logging.level: debug
 
 parameters:
   - description: Logstash HTTP Post Endpoint
